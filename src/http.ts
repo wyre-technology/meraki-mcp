@@ -1,7 +1,7 @@
 import { createServer as createHttpServer } from 'node:http';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 import { createServer } from './server.js';
-import { getCredentials } from './utils/client.js';
+import { getCredentials, runWithCredentials } from './utils/client.js';
 import { logger } from './utils/logger.js';
 
 function startHttpServer(): void {
@@ -31,28 +31,40 @@ function startHttpServer(): void {
       return;
     }
 
-    if (isGatewayMode) {
-      const apiKey = req.headers['x-meraki-api-key'] as string;
-      const orgId = req.headers['x-meraki-org-id'] as string;
-      if (apiKey) process.env.MERAKI_API_KEY = apiKey;
-      if (orgId) process.env.MERAKI_ORG_ID = orgId;
-      // Don't reject — tools/list works without credentials
+    const apiKey = isGatewayMode ? (req.headers['x-meraki-api-key'] as string | undefined) : undefined;
+    const orgId = isGatewayMode ? (req.headers['x-meraki-org-id'] as string | undefined) : undefined;
+
+    const handle = async () => {
+      // SECURITY-CRITICAL: this transport MUST stay stateless (sessionIdGenerator:
+      // undefined + enableJsonResponse: true). Per-request tenant credentials are
+      // carried in the AsyncLocalStorage context opened by runWithCredentials()
+      // below, and a stateless request->single-response flow keeps the tool call
+      // inside that context. A stateful/SSE transport (persistent stream) would let
+      // a long-lived connection serve later messages under a stale/foreign
+      // credential context — re-review tenant isolation before changing this.
+      const server = createServer();
+      const transport = new StreamableHTTPServerTransport({
+        sessionIdGenerator: undefined,
+        enableJsonResponse: true,
+      });
+      res.on('close', () => {
+        transport.close();
+        server.close();
+      });
+      await server.connect(transport);
+      await transport.handleRequest(req, res);
+    };
+
+    // Gateway mode injects per-request tenant credentials via headers; scope them
+    // to this request with AsyncLocalStorage so concurrent tenants never share a
+    // credential slot. When absent (stdio/env mode, or a tools/list probe with no
+    // creds) fall through to process.env — tools/list works without credentials,
+    // only tools/call requires them.
+    if (apiKey) {
+      await runWithCredentials({ apiKey, orgId }, handle);
+    } else {
+      await handle();
     }
-
-    // Create fresh server + transport per request (stateless)
-    const server = createServer();
-    const transport = new StreamableHTTPServerTransport({
-      sessionIdGenerator: undefined,
-      enableJsonResponse: true,
-    });
-
-    res.on('close', () => {
-      transport.close();
-      server.close();
-    });
-
-    await server.connect(transport);
-    await transport.handleRequest(req, res);
   });
 
   httpServer.listen(port, host, () => {
