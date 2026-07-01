@@ -2,7 +2,7 @@
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.github.wyre-technology/meraki-mcp",
   "title": "Cisco Meraki",
-  "description": "MCP server for the Cisco Meraki Dashboard — organizations, networks, devices, clients, wireless, switch, and appliance.",
+  "description": "MCP server for the Cisco Meraki Dashboard: networks, devices, wireless, switch, appliance.",
   "repository": {
     "url": "https://github.com/wyre-technology/meraki-mcp",
     "source": "github"
