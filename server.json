@@ -1,0 +1,70 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.wyre-technology/meraki-mcp",
+  "title": "Cisco Meraki",
+  "description": "MCP server for the Cisco Meraki Dashboard — organizations, networks, devices, clients, wireless, switch, and appliance.",
+  "repository": {
+    "url": "https://github.com/wyre-technology/meraki-mcp",
+    "source": "github"
+  },
+  "version": "0.0.0",
+  "websiteUrl": "https://github.com/wyre-technology/meraki-mcp",
+  "packages": [
+    {
+      "registryType": "oci",
+      "identifier": "ghcr.io/wyre-technology/meraki-mcp:0.0.0",
+      "transport": {
+        "type": "stdio"
+      },
+      "environmentVariables": [
+        {
+          "name": "MERAKI_API_KEY",
+          "description": "Cisco Meraki Dashboard API key",
+          "isRequired": true,
+          "isSecret": true,
+          "format": "string"
+        },
+        {
+          "name": "MERAKI_ORG_ID",
+          "description": "Default Meraki organization ID (optional)",
+          "isRequired": false,
+          "format": "string"
+        },
+        {
+          "name": "MERAKI_BASE_URL",
+          "description": "Override the Meraki API base URL (optional)",
+          "isRequired": false,
+          "format": "string"
+        },
+        {
+          "name": "READ_ONLY_MODE",
+          "description": "Safety switch. When true (the default), all write operations are blocked. Set to false to enable writes.",
+          "isRequired": false,
+          "default": "true",
+          "format": "string"
+        },
+        {
+          "name": "MCP_TRANSPORT",
+          "description": "Transport mode for the server. Set to 'stdio' for local CLI use; the image defaults to 'http' for gateway hosting.",
+          "isRequired": false,
+          "default": "stdio",
+          "format": "string"
+        },
+        {
+          "name": "AUTH_MODE",
+          "description": "Credential source: 'env' reads vars locally, 'gateway' expects header injection from the WYRE MCP Gateway.",
+          "isRequired": false,
+          "default": "env",
+          "format": "string"
+        },
+        {
+          "name": "LOG_LEVEL",
+          "description": "Log verbosity: debug, info, warn, error",
+          "isRequired": false,
+          "default": "info",
+          "format": "string"
+        }
+      ]
+    }
+  ]
+}
