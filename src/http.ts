@@ -13,11 +13,11 @@ function startHttpServer(): void {
     const url = new URL(req.url || '/', `http://${req.headers.host || 'localhost'}`);
 
     if (url.pathname === '/health') {
+      // liveness: must NOT gate on credentials (ACA probe carries none) or the container crash-loops
       const creds = getCredentials();
-      const statusCode = creds ? 200 : 503;
-      res.writeHead(statusCode, { 'Content-Type': 'application/json' });
+      res.writeHead(200, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({
-        status: creds ? 'ok' : 'degraded',
+        status: 'ok',
         transport: 'http',
         credentials: { configured: !!creds },
         timestamp: new Date().toISOString(),

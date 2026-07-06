@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- `/health` liveness endpoint now returns an unconditional `200` instead of gating on
+  credentials. The Azure Container Apps liveness probe hits `GET /health` with no
+  credentials, so the previous credential gate returned `503` and crash-looped the
+  container. Credential state is still reported in the response body
+  (`credentials.configured`); per-request credential handling for `/mcp` is unchanged.
+
 ## [1.0.0] - 2026-07-01
 
 ### Added
