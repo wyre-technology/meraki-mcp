@@ -3,6 +3,7 @@ import type { DomainHandler, CallToolResult } from '../utils/types.js';
 import { getClient } from '../utils/client.js';
 import { logger } from '../utils/logger.js';
 import { guardWrite } from '../utils/safety.js';
+import { buildDeviceCard, DEVICE_CARD_META } from '../card.builder.js';
 
 function getTools(): Tool[] {
   return [
@@ -21,6 +22,7 @@ function getTools(): Tool[] {
     {
       name: 'meraki_devices_get',
       description: 'Get a single device by serial number.',
+      _meta: DEVICE_CARD_META,
       annotations: { readOnlyHint: true },
       inputSchema: {
         type: 'object' as const,
@@ -94,7 +96,14 @@ async function handleCall(toolName: string, args: Record<string, unknown>): Prom
       const serial = args.serial as string;
       logger.info('API call: devices.get', { serial });
       const device = await client.devices.get(serial);
-      return { content: [{ type: 'text', text: JSON.stringify(device, null, 2) }] };
+      const payload: Record<string, unknown> = { ...device };
+
+      // MCP Apps: attach the normalized card payload the ui:// device card
+      // renders from. Best-effort — a null card just means no UI surface.
+      const card = await buildDeviceCard(payload, client).catch(() => null);
+      if (card) payload._card = card;
+
+      return { content: [{ type: 'text', text: JSON.stringify(payload, null, 2) }] };
     }
     case 'meraki_devices_reboot': {
       const blocked = guardWrite({ destructive: false }, args);
