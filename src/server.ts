@@ -3,6 +3,7 @@ import { ListToolsRequestSchema, CallToolRequestSchema } from '@modelcontextprot
 import { getNavigationTools, DOMAINS } from './domains/navigation.js';
 import { getDomainHandler } from './domains/index.js';
 import { passthroughHandler } from './domains/passthrough.js';
+import { registerResourceHandlers } from './resources.js';
 import { getCredentials } from './utils/client.js';
 import { logger } from './utils/logger.js';
 import type { DomainName } from './utils/types.js';
@@ -13,10 +14,14 @@ export function createServer(): Server {
     {
       capabilities: {
         tools: {},
+        resources: {},
         logging: {},
       },
     }
   );
+
+  // MCP Apps (SEP-1865): serve the ui:// device-card resource.
+  registerResourceHandlers(server);
 
   // Return ALL tools upfront — navigation is a stateless help/discovery tool.
   server.setRequestHandler(ListToolsRequestSchema, async () => {

@@ -27,6 +27,7 @@ See [Installation](#installation) for Docker and from-source methods.
 - **🌐 Network Coverage**: Tools spanning organizations, networks, devices, clients, wireless, switching, and appliance (MX) operations
 - **🔍 Flattened Navigation**: `meraki_navigate` and `meraki_status` are stateless discovery aids — every tool is callable at any time
 - **🛟 Safety by Default**: Read-only mode is **ON by default**; writes are gated and destructive actions require explicit confirmation
+- **🖼️ Interactive Device Card (MCP Apps)**: `meraki_devices_get` renders as a read-only interactive card in MCP Apps hosts (SEP-1865) — neutral by default, brandable via `window.__BRAND__` injection or `MCP_BRAND_*` env vars
 - **🧰 Long-Tail Escape Hatch**: `meraki_raw_request` reaches any Meraki v1 endpoint not covered by a curated tool
 - **🐳 Docker Ready**: Containerized deployment with HTTP transport and health checks
 - **📊 Structured Logging**: Configurable log levels
